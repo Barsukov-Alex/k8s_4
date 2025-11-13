@@ -73,6 +73,120 @@
   - `service-nodeport.yaml`
 - Скриншоты проверки доступа (`curl` или браузер).
 
+
+#### ОТВЕТ
+
+- Манифесты:
+  - `deployment-multi-container.yaml`
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  labels:
+    app: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.19.2
+        ports:
+        - containerPort: 80
+      - name: multitool
+        image: wbitt/network-multitool
+        env:
+          - name: HTTP_PORT
+            value: "8080"
+        ports:
+        - containerPort: 8080
+          name: http
+```
+
+  - `service-clusterip.yaml`
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-container-clusterip
+spec:
+  ports:
+    - name: http-nginx
+      port: 9001
+      protocol: TCP
+      targetPort: 80
+    - name: http-multitool
+      port: 9002
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: web
+```
+  
+  - `service-nodeport.yaml`
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-container-nodeport
+spec:
+  ports:
+    - name: http-nginx
+      port: 9001
+      protocol: TCP
+      targetPort: 80
+    - name: http-multitool
+      port: 9002
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: web
+```
+
+запуск
+```
+barsukov@barsukov:~/k8s_4$ microk8s kubectl apply -f .
+deployment.apps/web created
+service/multi-container-clusterip created
+service/multi-container-nodeport created
+barsukov@barsukov:~/k8s_4$ microk8s kubectl get po
+NAME                  READY   STATUS    RESTARTS   AGE
+web-c66b5cc5c-blx8d   2/2     Running   0          116s
+web-c66b5cc5c-s745x   2/2     Running   0          116s
+web-c66b5cc5c-wdjjv   2/2     Running   0          116s
+barsukov@barsukov:~/k8s_4$ kubectl get svc -o wide
+NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE    SELECTOR
+deployment-svc              ClusterIP   10.152.183.60    <none>        80/TCP,7080/TCP     74m    app=multitool
+kubernetes                  ClusterIP   10.152.183.1     <none>        443/TCP             156m   <none>
+multi-container-clusterip   ClusterIP   10.152.183.24    <none>        9001/TCP,9002/TCP   2m7s   app=web
+multi-container-nodeport    ClusterIP   10.152.183.169   <none>        9001/TCP,9002/TCP   2m7s   app=web
+nginx-svc                   ClusterIP   10.152.183.70    <none>        80/TCP              42m    app=nginx
+barsukov@barsukov:~/k8s_4$  kubectl get pods -o wide
+NAME                  READY   STATUS    RESTARTS   AGE     IP            NODE          NOMINATED NODE   READINESS GATES
+web-c66b5cc5c-blx8d   2/2     Running   0          2m37s   10.1.10.232   barsukov.vm   <none>           <none>
+web-c66b5cc5c-s745x   2/2     Running   0          2m37s   10.1.10.233   barsukov.vm   <none>           <none>
+web-c66b5cc5c-wdjjv   2/2     Running   0          2m37s   10.1.10.231   barsukov.vm   <none>           <none>
+
+```
+
+<img src = "img/1.jpg" width = 100%>
+<img src = "img/2.jpg" width = 100%>
+<img src = "img/3.jpg" width = 100%>
+
+
+
+
+
 ---
 ## **Задание 2: Настройка Ingress**
 ### **Задача**
