@@ -74,7 +74,7 @@
 - Скриншоты проверки доступа (`curl` или браузер).
 
 
-#### ОТВЕТ
+#### ОТВЕТ 1
 
 - Манифесты:
   - `deployment-multi-container.yaml`
@@ -184,9 +184,6 @@ web-c66b5cc5c-wdjjv   2/2     Running   0          2m37s   10.1.10.231   barsuko
 <img src = "img/3.jpg" width = 100%>
 
 
-
-
-
 ---
 ## **Задание 2: Настройка Ingress**
 ### **Задача**
@@ -278,18 +275,74 @@ spec:
             port:
               number: 80
 ```
+
+#### ОТВЕТ 2
+
+- Манифесты:
+  - `deployment-frontend.yaml`
+  - `deployment-backend.yaml`
+  - `service-frontend.yaml`
+  - `service-backend.yaml`
+  - `ingress.yaml`
+
+
+```
+barsukov@barsukov:~/k8s_4/2$ microk8s kubectl apply -f . 
+deployment.apps/backend created
+deployment.apps/frontend created
+ingress.networking.k8s.io/my-ingress created
+service/backend created
+service/frontend created
+barsukov@barsukov:~/k8s_4/2$ 
+barsukov@barsukov:~/k8s_4/2$ kubectl get po
+NAME                        READY   STATUS    RESTARTS   AGE
+backend-b57968f8d-9sd9z     1/1     Running   0          59s
+frontend-54758c4c55-z9t9q   1/1     Running   0          59s
+web-c66b5cc5c-sswgk         2/2     Running   0          53m
+web-c66b5cc5c-tw76k         2/2     Running   0          53m
+web-c66b5cc5c-vckbv         2/2     Running   0          53m
+barsukov@barsukov:~/k8s_4/2$ microk8s enable ingress
+Infer repository core for addon ingress
+Enabling Ingress
+ingressclass.networking.k8s.io/public created
+ingressclass.networking.k8s.io/nginx created
+namespace/ingress created
+serviceaccount/nginx-ingress-microk8s-serviceaccount created
+clusterrole.rbac.authorization.k8s.io/nginx-ingress-microk8s-clusterrole created
+role.rbac.authorization.k8s.io/nginx-ingress-microk8s-role created
+clusterrolebinding.rbac.authorization.k8s.io/nginx-ingress-microk8s created
+rolebinding.rbac.authorization.k8s.io/nginx-ingress-microk8s created
+configmap/nginx-load-balancer-microk8s-conf created
+configmap/nginx-ingress-tcp-microk8s-conf created
+configmap/nginx-ingress-udp-microk8s-conf created
+daemonset.apps/nginx-ingress-microk8s-controller created
+Ingress is enabled
+barsukov@barsukov:~/k8s_4/2$ 
+barsukov@barsukov:~/k8s_4/2$ kubectl get svc -o wide
+NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE     SELECTOR
+backend                     ClusterIP   10.152.183.193   <none>        80/TCP              117s    app=backend
+deployment-svc              ClusterIP   10.152.183.60    <none>        80/TCP,7080/TCP     144m    app=multitool
+frontend                    ClusterIP   10.152.183.83    <none>        80/TCP              117s    app=frontend
+kubernetes                  ClusterIP   10.152.183.1     <none>        443/TCP             3h46m   <none>
+multi-container-clusterip   ClusterIP   10.152.183.24    <none>        9001/TCP,9002/TCP   72m     app=web
+multi-container-nodeport    ClusterIP   10.152.183.169   <none>        9001/TCP,9002/TCP   72m     app=web
+nginx-svc                   ClusterIP   10.152.183.70    <none>        80/TCP              113m    app=nginx
+barsukov@barsukov:~/k8s_4/2$ kubectl get pods -o wide
+NAME                        READY   STATUS    RESTARTS   AGE    IP            NODE          NOMINATED NODE   READINESS GATES
+backend-b57968f8d-9sd9z     1/1     Running   0          2m7s   10.1.10.240   barsukov.vm   <none>           <none>
+frontend-54758c4c55-z9t9q   1/1     Running   0          2m7s   10.1.10.241   barsukov.vm   <none>           <none>
+web-c66b5cc5c-sswgk         2/2     Running   0          54m    10.1.10.238   barsukov.vm   <none>           <none>
+web-c66b5cc5c-tw76k         2/2     Running   0          54m    10.1.10.239   barsukov.vm   <none>           <none>
+web-c66b5cc5c-vckbv         2/2     Running   0          54m    10.1.10.237   barsukov.vm   <none>           <none>
+
+```
+
+
+<img src = "img/4.jpg" width = 100%>
+<img src = "img/5.jpg" width = 100%>
+<img src = "img/6.jpg" width = 100%>
+
+
+
 ---
 
-## **Правила приёма работы**
-1. Домашняя работа оформляется в своём Git-репозитории в файле README.md. Выполненное домашнее задание пришлите ссылкой на .md-файл в вашем репозитории.
-2. Файл README.md должен содержать скриншоты вывода необходимых команд `kubectl` и скриншоты результатов.
-3. Репозиторий должен содержать тексты манифестов или ссылки на них в файле README.md.
-
-## **Критерии оценивания задания**
-1. Зачёт: Все задачи выполнены, манифесты корректны, есть доказательства работы (скриншоты).
-2. Доработка (на доработку задание направляется 1 раз): основные задачи выполнены, при этом есть ошибки в манифестах или отсутствуют проверочные скриншоты.
-3. Незачёт: работа выполнена не в полном объёме, есть ошибки в манифестах, отсутствуют проверочные скриншоты. Все попытки доработки израсходованы (на доработку работа направляется 1 раз). Этот вид оценки используется крайне редко.
-
-## **Срок выполнения задания**  
-1. 5 дней на выполнение задания.
-2. 5 дней на доработку задания (в случае направления задания на доработку).
